@@ -13,11 +13,19 @@ export async function initializeDatabase() {
       )
     `);
 
-    // Add user_id column to todo table if it doesn't exist
-    const [cols] = await db.query(`SHOW COLUMNS FROM todo LIKE 'user_id'`);
-    if (cols.length === 0) {
+    // Add user_id and is_done if they don't exist
+    const [columns] = await db.query("SHOW COLUMNS FROM todo");
+    const hasUserId = columns.some(col => col.Field === 'user_id');
+    const hasIsDone = columns.some(col => col.Field === 'is_done');
+
+    if (!hasUserId) {
       await db.query(`ALTER TABLE todo ADD COLUMN user_id INT, ADD FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE`);
       console.log("Added user_id column to todo table");
+    }
+
+    if (!hasIsDone) {
+      await db.query(`ALTER TABLE todo ADD COLUMN is_done BOOLEAN DEFAULT FALSE`);
+      console.log("Added is_done column to todo table");
     }
 
     console.log("Database migration completed successfully");

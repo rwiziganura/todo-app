@@ -22,10 +22,20 @@ export const deletetodo = async (id, userId) => {
   return rows;
 };
 
-export const updatetodo = async (id, title, userId) => {
+export const updatetodo = async (id, title, isDone, userId) => {
   const [rows] = await db.query(
-    "UPDATE todo SET title = ? WHERE id = ? AND user_id = ?",
-    [title, id, userId]
+    "UPDATE todo SET title = ?, is_done = ? WHERE id = ? AND user_id = ?",
+    [title, isDone, id, userId]
   );
   return rows;
 };
+
+
+export const deleteAllTodos = async (userId) => {
+  const [rows] = await db.query(
+    "DELETE FROM todo WHERE user_id = ?",
+    [userId]
+  );
+  return rows;
+};
+

@@ -79,6 +79,29 @@ export default function App() {
     }
   };
 
+  const toggleDone = async (todo) => {
+    try {
+      await api.put(`/todos/${todo.id}`, { 
+        title: todo.title, 
+        is_done: !todo.is_done 
+      });
+      fetchTodos();
+    } catch (err) {
+      setError("Failed to update status.");
+    }
+  };
+
+
+  const deleteAllTodos = async () => {
+    if (!window.confirm("Are you sure you want to delete all todos?")) return;
+    try {
+      await api.delete("/todos/all");
+      fetchTodos();
+    } catch (err) {
+      setError("Failed to delete all todos.");
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -127,32 +150,50 @@ export default function App() {
               <p>No todos yet. Add one above!</p>
             </div>
           ) : (
-            todos.map((todo) => (
-              <div key={todo.id} className="todo-item">
-                {editId === todo.id ? (
-                  <div className="todo-edit-row">
-                    <input
-                      className="todo-edit-input"
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && updateTodo(todo.id)}
-                      autoFocus
-                    />
-                    <button className="save-btn" onClick={() => updateTodo(todo.id)}>Save</button>
-                    <button className="cancel-btn" onClick={cancelEdit}>Cancel</button>
-                  </div>
-                ) : (
-                  <div className="todo-display-row">
-                    <span className="todo-check">✓</span>
-                    <p className="todo-title">{todo.title}</p>
-                    <div className="todo-actions">
-                      <button className="edit-btn" onClick={() => startEdit(todo)}>Edit</button>
-                      <button className="delete-btn" onClick={() => deleteTodo(todo.id)}>Delete</button>
-                    </div>
-                  </div>
-                )}
+            <>
+              <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+                <button 
+                  onClick={deleteAllTodos} 
+                  style={{ color: '#cf6679', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Delete All
+                </button>
               </div>
-            ))
+              {todos.map((todo) => (
+                <div key={todo.id} className="todo-item">
+                  {editId === todo.id ? (
+                    <div className="todo-edit-row">
+                      <input
+                        className="todo-edit-input"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && updateTodo(todo.id)}
+                        autoFocus
+                      />
+                      <button className="save-btn" onClick={() => updateTodo(todo.id)}>Save</button>
+                      <button className="cancel-btn" onClick={cancelEdit}>Cancel</button>
+                    </div>
+                  ) : (
+                    <div className="todo-display-row">
+                      <input 
+                        type="checkbox" 
+                        className="todo-checkbox" 
+                        checked={!!todo.is_done} 
+                        onChange={() => toggleDone(todo)} 
+                      />
+                      <p className={`todo-title ${todo.is_done ? 'todo-done' : ''}`}>
+                        {todo.title}
+                      </p>
+                      <div className="todo-actions">
+                        {!todo.is_done && <button className="edit-btn" onClick={() => startEdit(todo)}>Edit</button>}
+                        <button className="delete-btn" onClick={() => deleteTodo(todo.id)}>Delete</button>
+                      </div>
+                    </div>
+
+                  )}
+                </div>
+              ))}
+            </>
           )}
         </div>
 
